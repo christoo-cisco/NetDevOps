@@ -1,0 +1,241 @@
+all:       
+  children:
+    Core:
+      hosts:
+        Core-01:
+          interfaces:
+            GigabitEthernet0/0/0/0:
+              remoteNodeID: 3
+            GigabitEthernet0/0/0/1:
+              remoteNodeID: 2
+            GigabitEthernet0/0/0/2:
+              remoteNodeID: 4
+            GigabitEthernet0/0/0/5:
+              remoteNodeID: 21
+            GigabitEthernet0/0/0/6:
+              remoteNodeID: 7
+            GigabitEthernet0/0/0/7:
+              remoteNodeID: 8
+        Core-02:
+          interfaces:
+            GigabitEthernet0/0/0/0:
+              remoteNodeID: 1
+            GigabitEthernet0/0/0/1:
+              remoteNodeID: 4
+            GigabitEthernet0/0/0/2:
+              remoteNodeID: 3
+            GigabitEthernet0/0/0/5:
+              remoteNodeID: 8
+            GigabitEthernet0/0/0/6:
+              remoteNodeID: 7
+        Core-03:
+          interfaces:
+            GigabitEthernet0/0/0/0:
+              remoteNodeID: 4
+            GigabitEthernet0/0/0/1:
+              remoteNodeID: 1
+            GigabitEthernet0/0/0/2:
+              remoteNodeID: 2
+            GigabitEthernet0/0/0/3:
+              remoteNodeID: 9
+            GigabitEthernet0/0/0/4:
+              remoteNodeID: 10
+            GigabitEthernet0/0/0/5:
+              remoteNodeID: 21
+        Core-04:
+          interfaces:
+            GigabitEthernet0/0/0/0:
+              remoteNodeID: 2
+            GigabitEthernet0/0/0/1:
+              remoteNodeID: 3
+            GigabitEthernet0/0/0/2:
+              remoteNodeID: 1
+            GigabitEthernet0/0/0/3:
+              remoteNodeID: 9
+            GigabitEthernet0/0/0/4:
+              remoteNodeID: 10
+    Access:
+      hosts:
+        A-PE-01:
+          interfaces:
+            GigabitEthernet0/0/0/3:
+              remoteNodeID: 7
+            GigabitEthernet0/0/0/4:
+              remoteNodeID: 8
+        A-PE-02:
+          interfaces:
+            GigabitEthernet0/0/0/3:
+              remoteNodeID: 7
+            GigabitEthernet0/0/0/4:
+              remoteNodeID: 8
+        #A-PE-03:
+        #  interfaces:
+        #    GigabitEthernet5:
+        #      remoteNodeID: 7
+        #    GigabitEthernet6:
+        #      remoteNodeID: 8
+        A-PE-04:
+          interfaces:
+            GigabitEthernet0/0/0/0:
+              remoteNodeID: 9
+            GigabitEthernet0/0/0/1:
+              remoteNodeID: 10
+        A-PE-05:
+          interfaces:
+            GigabitEthernet0/0/0/0:
+              remoteNodeID: 9
+            GigabitEthernet0/0/0/1:
+              remoteNodeID: 10
+        #A-PE-06:
+        #  interfaces:
+        #    GigabitEthernet2:
+        #      remoteNodeID: 9
+        #    GigabitEthernet3:
+        #      remoteNodeID: 10
+    ABR:
+      hosts:
+        PE-01:
+          interfaces:
+            GigabitEthernet0/0/0/2:
+              remoteNodeID: 8
+              domain: core
+            GigabitEthernet0/0/0/3:
+              remoteNodeID: 8
+              domain: access
+            GigabitEthernet0/0/0/5:
+              remoteNodeID: 11
+              domain: access
+            GigabitEthernet0/0/0/6:
+              remoteNodeID: 12
+              domain: access
+            GigabitEthernet0/0/0/7:
+              remoteNodeID: 13
+              domain: access
+            GigabitEthernet0/0/0/8:
+              remoteNodeID: 1
+              domain: core
+            GigabitEthernet0/0/0/9:
+              remoteNodeID: 19
+              domain: access
+            GigabitEthernet0/0/0/10:
+              remoteNodeID: 2
+              domain: core
+        PE-02:
+          interfaces:
+            GigabitEthernet0/0/0/2:
+              remoteNodeID: 7
+              domain: core
+            GigabitEthernet0/0/0/3:
+              remoteNodeID: 7
+              domain: access
+            GigabitEthernet0/0/0/5:
+              remoteNodeID: 11
+              domain: access
+            GigabitEthernet0/0/0/6:
+              remoteNodeID: 12
+              domain: access
+            GigabitEthernet0/0/0/7:
+              remoteNodeID: 13
+              domain: access
+            GigabitEthernet0/0/0/8:
+              remoteNodeID: 2
+              domain: core
+            GigabitEthernet0/0/0/9:
+              remoteNodeID: 19
+              domain: access
+            GigabitEthernet0/0/0/10:
+              remoteNodeID: 1
+              domain: core
+        Agg-03:
+          interfaces:
+            GigabitEthernet0/0/0/0:
+              remoteNodeID: 3
+              domain: core
+            GigabitEthernet0/0/0/1:
+              remoteNodeID: 4
+              domain: core
+            GigabitEthernet0/0/0/2:
+              remoteNodeID: 10
+              domain: core
+            GigabitEthernet0/0/0/3:
+              remoteNodeID: 10
+              domain: access
+            GigabitEthernet0/0/0/4:
+              remoteNodeID: 14
+              domain: access
+            GigabitEthernet0/0/0/5:
+              remoteNodeID: 15
+              domain: access
+            GigabitEthernet0/0/0/6:
+              remoteNodeID: 20
+              domain: access
+            GigabitEthernet0/0/0/7:
+              remoteNodeID: 16
+              domain: access
+        Agg-04:
+          interfaces:
+            GigabitEthernet0/0/0/0:
+              remoteNodeID: 3
+              domain: core
+            GigabitEthernet0/0/0/1:
+              remoteNodeID: 4
+              domain: core
+            GigabitEthernet0/0/0/2:
+              remoteNodeID: 9
+              domain: core
+            GigabitEthernet0/0/0/3:
+              remoteNodeID: 9
+              domain: access
+            GigabitEthernet0/0/0/4:
+              remoteNodeID: 14
+              domain: access
+            GigabitEthernet0/0/0/5:
+              remoteNodeID: 15
+              domain: access
+            GigabitEthernet0/0/0/6:
+              remoteNodeID: 20
+              domain: access
+            GigabitEthernet0/0/0/7:
+              remoteNodeID: 16
+              domain: access
+    PCE:
+      hosts:
+        SRPCE-01:
+          interfaces:
+            GigabitEthernet0/0/0/2:
+              remoteNodeID: 7
+            GigabitEthernet0/0/0/3:
+              remoteNodeID: 8
+        SRPCE-02:
+          interfaces:
+            GigabitEthernet0/0/0/0:
+              remoteNodeID: 9
+            GigabitEthernet0/0/0/1:
+              remoteNodeID: 10
+    RR:
+      hosts:
+        RR-01:
+          interfaces:
+            GigabitEthernet0/0/0/0:
+              remoteNodeID: 1
+            GigabitEthernet0/0/0/1:
+              remoteNodeID: 3
+
+East:
+  hosts:
+    A-PE-01:
+    A-PE-02:
+    #A-PE-03:
+    PE-01:
+    PE-02:
+    SRPCE-01:
+West:
+  hosts:
+    A-PE-04:
+    A-PE-05:
+    #A-PE-06:
+    Agg-03:
+    Agg-04:
+    SRPCE-02:
+Core:
+  hosts:

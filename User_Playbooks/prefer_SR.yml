@@ -1,0 +1,34 @@
+---
+- name: Enable Segement Routing Prefer
+  hosts: all
+  connection: local
+  gather_facts: no
+
+  tasks:
+
+    - name: Remove old config
+      file: path=$HOME/virl2/UserConfig/{{ inventory_hostname }}/SR-Prefer/ state=absent
+      changed_when: False
+      no_log: false
+
+    - name: Create empty
+      file: path=$HOME/virl2/UserConfig/{{ inventory_hostname }}/SR-Prefer/ state=directory
+      changed_when: False
+
+    - name: "Building SR Prefer Configuration"
+      template: src=../tasks/roles/SR-Prefer/templates/{{os}}/SR-PREFER.j2 dest=$HOME/virl2/UserConfig/{{ inventory_hostname }}/SR-Prefer/SR-PREFER.out
+      changed_when: False
+      tags:
+        - sr-mpls
+    
+    - name: Push configuration with napalm
+      napalm_install_config:
+          hostname={{ management_ip }}
+          username=napalm
+          dev_os={{os}}
+          password=napalm
+          config_file=$HOME/virl2/UserConfig/{{ inventory_hostname }}/SR-Prefer/SR-PREFER.out
+          commit_changes={{commit_changes}}
+          replace_config=0
+          diff_file=$HOME/virl2/UserConfig/{{ inventory_hostname }}/SR-Prefer/diff
+      no_log: False
