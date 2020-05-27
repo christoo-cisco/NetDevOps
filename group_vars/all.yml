@@ -10,11 +10,8 @@ replace_config: '1'
 # Local user accounts 
 users:
     - name: cisco
-      secret: C!sco123
-      group: root-lr
-    - name: chris
       secret: cisco
-      group: netadmin
+      group: root-lr
     - name: napalm
       secret: napalm
       group: root-lr
