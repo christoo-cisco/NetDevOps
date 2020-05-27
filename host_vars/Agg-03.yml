@@ -1,0 +1,9 @@
+# Node ID, must be unique identifier for each node in the network
+# Node operating system (iosxr, iosxe)
+id: 9
+os: iosxr
+
+# Nodes management IP address, subnetmask prefix and Interface
+management_ip: 10.89.188.86
+management_prefix: /23
+management_interface: MgmtEth0/RP0/CPU0/0

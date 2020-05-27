@@ -1,0 +1,59 @@
+---
+ansible_python_interpreter: "/usr/bin/python3"
+
+#Customer name
+customer: RCDN_Lab
+
+# Merge or Relpace configuration
+replace_config: '1'
+
+# Local user accounts 
+users:
+    - name: cisco
+      secret: C!sco123
+      group: root-lr
+    - name: chris
+      secret: cisco
+      group: netadmin
+    - name: napalm
+      secret: napalm
+      group: root-lr
+
+# Management Network GW address
+management_gw: 10.89.188.1
+
+# Define IGP type (isis or ospf)
+igp: 'isis'
+
+# IGP Authentication
+Auth: true
+
+# Authenticaion Key String
+key: cisco
+
+# Define Infrastructer addresses
+primary_dns_server: '72.163.47.11'
+primary_ntp_server: '171.68.38.65'
+secondary_ntp_server:
+
+# Access Domain unless defined by group
+AccDom: 100
+
+# Prefix for Infrastructer Loopbacks unless defined by group
+loopbackPrefix: 10.0.
+loopbackCidr: /32
+
+# prefix for P2P addresses
+interconnect_range: 10
+
+# TE Tunnel Endpoints (Add TE tunnel endpoints)
+TunnelEP: []
+
+# Define BGP (link-state link-state, l2vpn evpn, vpls-vpws)
+BGP:
+  ASN: 65000
+  addressFamilies:
+    - addressFamily: link-state link-state
+      Type: Inf
+    - addressFamily: l2vpn evpn
+      Type: Service     

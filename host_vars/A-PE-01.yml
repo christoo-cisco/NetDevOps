@@ -1,0 +1,82 @@
+# Node ID, must be unique identifier for each node in the network
+# Node operating system (iosxr, iosxe)
+id: 11
+os: iosxr
+
+# Nodes management IP address, subnetmask prefix and Interface
+management_ip: 10.89.188.88
+management_prefix: /23
+management_interface: MgmtEth0/RP0/CPU0/0
+
+# Interfaces used as Attachment Circuits for services in the network
+# Example:
+#  GigabitEthernet0/0/0/2: <- interface for AC
+#    CE: 'CE-01' <- CE connected to AC
+#    vpnID: 100 <- VPN ID for the corresponding service
+#    VLAN: 100 <- VLAN ID for .1q tag (int or 'Untagged')
+#    Type: L2 <- AC type (L2 or L3) 
+ServiceInterfaces:
+  GigabitEthernet0/0/0/2:
+    - VLAN: 100
+      CE: 'CE-01'
+      vpnID: 100
+      Type: L2
+    - VLAN: 200
+      CE: 'CE-01'
+      vpnID: 200
+      Type: L2
+
+# Services running on the PE (evpn-vpws, epvnmh, bgp-AD-PW, SRTE)
+# Examples:
+#   bgpADpw:
+#   - CircuitID: '24/EVPN/123456//SD/1' <-- self-explanatory :)
+#     type: backhaul <- Purpose of circuit (used for xconnect group)
+#     vpnID: 100 <- VPN ID for the corresponding service
+#     DestNode: 3 <- Destination node ID
+#     SourceAC: 1 <- Attachment Circuit number for service interface (Unique per AC on PE)
+#  evpnvpws:
+#   - CircuitID: '24/EVPN/123456//SD/1' 
+#     type: backhaul
+#     vpnID: 100
+#     DestNode: 14
+#     SourceAC: 1
+#     DestAC: 1 <- Attachment Circuit number for remote service interface (Unique per AC on PE)
+#     flowLabel: true <- Use flow base load balancing (true, false)
+#  evpnmh:
+#    - CircuitID: '24/EVPN/123456//SD/2'
+#      type: BusinessL2
+#      vpnID: 200
+#  srte:
+#   - name: Policy1 <-- self-explanatory :)
+#     color: 100 <- Color for policy defined as int (must be unique)
+#     endpoint: 10.101.0.14
+#     type: dynamic <- Path type (dynamic, static)
+#     metric: igp <- Path metric (igp, te, delay)
+#     usePCE: true <- Use a PCE to compute (true, false)
+#     useAnycast: true <- Use anycast sid in te path (true, false)
+services:
+  evpnvpws:
+    - CircuitID: '24/EVPN/123456//SD/1'
+      type: backhaul
+      vpnID: 100
+      DestNode: 14
+      SourceAC: 1
+      DestAC: 1
+      flowLabel: true
+    - CircuitID: '24/EVPN/123456//SD/2'
+      type: backhaul
+      vpnID: 200
+      DestNode: 2
+      SourceAC: 2
+      DestAC: 1
+      flowLabel: true
+  
+
+  srte:
+    - name: Policy1
+      color: 100
+      endpoint: 10.101.0.14
+      type: dynamic
+      metric: igp
+      usePCE: true
+      useAnycast: true

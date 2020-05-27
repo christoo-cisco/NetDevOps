@@ -1,0 +1,7 @@
+---
+# Access Domain for nodes in this group
+AccDom: 100
+
+# Prefix for Infrastructer Loopbacks
+loopbackPrefix: 10.100.
+loopbackCidr: /32
