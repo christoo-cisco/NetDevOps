@@ -1,0 +1,12 @@
+{% if services.evpnvpws is defined %}
+{% include "include/evpn-vpws.j2" %}
+{% endif %}
+{% if services.bgpADpw is defined %}
+{% include "include/bgp-ad-pw.j2" %}
+{% endif %}
+{% if services.evpnmh is defined %}
+{% include "include/evpn-mh.j2" %}
+{% endif %}
+{% if services.srte is defined %}
+{% include "include/srtePolicy.j2" %}
+{% endif %}

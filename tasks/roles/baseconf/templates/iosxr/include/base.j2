@@ -1,0 +1,40 @@
+hostname {{ inventory_hostname }}
+service timestamps log datetime msec
+service timestamps debug datetime msec
+domain name virl.lab
+domain lookup disable
+
+vrf Mgmt-intf
+ address-family ipv4 unicast
+ !
+ address-family ipv6 unicast
+ !
+!
+
+call-home
+ service active
+ contact smart-licensing
+ profile CiscoTAC-1
+  active
+  destination transport-method http
+
+domain vrf Mgmt-intf name-server {{ primary_dns_server }}
+domain vrf Mgmt-intf lookup source-interface {{ management_interface }}
+
+router static
+ address-family ipv4 unicast
+  0.0.0.0/1 Null0
+
+ntp
+ server vrf Mgmt-intf {{ primary_ntp_server }}
+ source vrf Mgmt-intf {{ management_interface }}
+
+ssh server v2
+ssh server vrf Mgmt-intf
+ssh server netconf vrf Mgmt-intf
+netconf agent tty
+xml agent tty
+ iteration off
+netconf-yang agent
+ ssh
+lldp

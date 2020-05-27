@@ -1,0 +1,26 @@
+{% for service in services.evpnvpws %}
+l2vpn
+ xconnect group {{ service.type }}
+  p2p {{ id }}to{{ service.DestNode }}
+   description CID {{ service.CircuitID }}
+{% for interface in interface_list %}
+{% if ServiceInterfaces[interface] is defined %}
+{% for s in ServiceInterfaces[interface] %}
+{% if s.vpnID == service.vpnID %}
+{% if s.VLAN == 'untagged' %}
+   interface {{ interface }}
+{% else %}
+   interface {{ interface }}.{{ s.VLAN }}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+   neighbor evpn evi {{service.vpnID}} target {{service.DestAC}} source {{service.SourceAC}}
+{% if service.flowLabel == true %}
+evpn
+ evi {{service.vpnID}}
+  load-balancing
+   flow-label static
+{% endif %}
+{% endfor %}

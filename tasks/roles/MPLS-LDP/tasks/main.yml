@@ -1,0 +1,8 @@
+---
+- name: "Building LDP Configuration"
+  template: src={{ os }}/LDP.j2 dest={{ baseconfdir.path }}/06_LDP.out
+  changed_when: False
+  #when: commit_changes | match('0')
+  when: commit_changes == '0'
+  tags:
+    - fabric

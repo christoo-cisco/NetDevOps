@@ -1,0 +1,124 @@
+{% macro configure_srmpls(igp,role) %}
+{% if igp == 'isis' %}
+{% if role == 'Core' %}
+router isis Core
+ address-family ipv4 unicast
+  segment-routing mpls
+  microloop avoidance
+ interface Loopback0
+  address-family ipv4 unicast
+   prefix-sid index {{ id }}
+{% for interface in interfaces %}
+{% if not ( interface.startswith((management_interface , 'Loopback', 'Null')) ) %}
+ interface {{ interface }}
+  address-family ipv4 unicast
+   fast-reroute per-prefix
+   fast-reroute per-prefix ti-lfa
+{% endif %}
+{% endfor %}
+
+{% elif role == 'ABR' %}
+router isis ACCESS
+ address-family ipv4 unicast
+  segment-routing mpls
+  microloop avoidance
+ interface Loopback0
+  address-family ipv4 unicast
+   prefix-sid index {{ id }}
+{% for interface in interfaces %}
+{% if not ( interface.startswith((management_interface , 'Loopback', 'Null')) ) and interfaces[interface]['domain'] == 'access' %}
+ interface {{ interface }}
+  address-family ipv4 unicast
+   fast-reroute per-prefix
+   fast-reroute per-prefix ti-lfa
+{% endif %}
+{% endfor %}
+router isis Core
+ address-family ipv4 unicast
+  segment-routing mpls
+  microloop avoidance
+ interface Loopback0
+  address-family ipv4 unicast
+   prefix-sid index {{ id }}
+{% for interface in interfaces %}
+{% if not ( interface.startswith((management_interface , 'Loopback', 'Null')) ) and interfaces[interface]['domain'] == 'core' %}
+ interface {{ interface }}
+  address-family ipv4 unicast
+   fast-reroute per-prefix
+   fast-reroute per-prefix ti-lfa
+{% endif %}
+{% endfor %}
+
+{% elif role == 'Access' %}
+router isis ACCESS
+ address-family ipv4 unicast
+  segment-routing mpls
+  microloop avoidance
+ interface Loopback0
+  address-family ipv4 unicast
+   prefix-sid index {{ id }}
+{% for interface in interfaces %}
+{% if not ( interface.startswith((management_interface , 'Loopback', 'Null')) ) %}
+ interface {{ interface }}
+  address-family ipv4 unicast
+   fast-reroute per-prefix
+   fast-reroute per-prefix ti-lfa
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% elif igp == 'ospf' %}
+{% if role == 'Core' %}
+router ospf Core
+ segment-routing mpls 
+ segment-routing forwarding mpls 
+ fast-reroute per-prefix 
+ fast-reroute per-prefix ti-lfa enable 
+ microloop avoidance
+ area 0
+ interface Loopback0
+   prefix-sid index {{ id }}
+
+{% elif role == 'ABR' %}
+router ospf ACCESS
+ segment-routing mpls 
+ segment-routing forwarding mpls 
+ fast-reroute per-prefix 
+ fast-reroute per-prefix ti-lfa enable 
+ microloop avoidance
+ area 0
+ interface Loopback0
+   prefix-sid index {{ id }}
+router ospf Core
+ segment-routing mpls 
+ segment-routing forwarding mpls 
+ fast-reroute per-prefix 
+ fast-reroute per-prefix ti-lfa enable 
+ microloop avoidance
+ area 0
+ interface Loopback0
+   prefix-sid index {{ id }}
+
+{% elif role == 'Access' %}
+router ospf ACCESS
+ segment-routing mpls 
+ segment-routing forwarding mpls 
+ fast-reroute per-prefix 
+ fast-reroute per-prefix ti-lfa enable 
+ microloop avoidance
+ area 0
+ interface Loopback0
+   prefix-sid index {{ id }}
+{% endif %}
+{% endif %}
+{% endmacro %}
+
+mpls oam
+
+{% if inventory_hostname in groups['Core'] or inventory_hostname in groups['RR'] %}
+{{ configure_srmpls(igp,'Core') }}
+{% elif inventory_hostname in groups['ABR'] %}
+{{ configure_srmpls(igp,'ABR') }}
+{% elif inventory_hostname in groups['Access'] or inventory_hostname in groups['PCE'] %}
+{{ configure_srmpls(igp,'Access') }}
+{% endif %}

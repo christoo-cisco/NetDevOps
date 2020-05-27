@@ -1,0 +1,61 @@
+{% macro configure_srte(igp,role) %}
+{% if igp == 'isis' %}
+{% if role == 'Core'%}
+router isis Core
+ address-family ipv4 unicast
+  mpls traffic-eng level-2-only
+  mpls traffic-eng router-id Loopback0
+
+{% elif role =='ABR' %}
+router isis ACCESS
+ address-family ipv4 unicast
+  mpls traffic-eng level-2-only
+  mpls traffic-eng router-id Loopback0
+router isis Core
+ address-family ipv4 unicast
+  mpls traffic-eng level-2-only
+  mpls traffic-eng router-id Loopback0
+
+{% elif role =='Access' %}
+router isis ACCESS
+ address-family ipv4 unicast
+  mpls traffic-eng level-2-only
+  mpls traffic-eng router-id Loopback0
+{% endif %}
+
+{% elif igp == 'ospf' %}
+{% if role == 'Core'%}
+router ospf Core
+ mpls traffic-eng router-id Loopback 0
+ area 0
+  mpls traffic-eng
+
+{% elif role =='ABR' %}
+router ospf ACCESS
+ mpls traffic-eng router-id Loopback 0
+ area 0
+  mpls traffic-eng
+router ospf Core
+ mpls traffic-eng router-id Loopback 0
+ area 0
+  mpls traffic-eng
+
+{% elif role =='Access' %}
+router ospf ACCESS
+ mpls traffic-eng router-id Loopback 0
+ area 0
+  mpls traffic-eng
+{% endif %}
+{% endif %}
+{% endmacro %}
+
+ipv4 unnumbered mpls traffic-eng Loopback0
+mpls traffic-eng
+
+{% if inventory_hostname in groups['Core'] or inventory_hostname in groups['RR'] %}
+{{ configure_srte(igp,'Core') }}
+{% elif inventory_hostname in groups['ABR'] %}
+{{ configure_srte(igp,'ABR') }}
+{% elif inventory_hostname in groups['Access'] or inventory_hostname in groups['PCE'] %}
+{{ configure_srte(igp,'Access') }}
+{% endif %}

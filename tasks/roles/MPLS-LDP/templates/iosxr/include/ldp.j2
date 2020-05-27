@@ -1,0 +1,14 @@
+mpls ldp
+{% if inventory_hostname in groups['PCE'] or inventory_hostname in groups['RR'] %}
+ router-id {{ loopbackPrefix }}1.{{ id }}
+{% else %}
+ router-id {{ loopbackPrefix }}0.{{ id }}
+{% endif %}
+
+{% for interface in interface_list %}
+{% if interfaces[interface] is defined %}
+  interface {{ interface }}
+{% endif %}
+{% endfor %}
+
+mpls oam

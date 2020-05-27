@@ -1,0 +1,8 @@
+---
+- name: "Building SR-Prefer Configuration"
+  template: src={{ os }}/SR-PREFER.j2 dest={{ baseconfdir.path }}/06_SR-PREFER.out
+  changed_when: False
+  #when: commit_changes | match('0')
+  when: commit_changes == '0'
+  tags:
+    - sr-mpls

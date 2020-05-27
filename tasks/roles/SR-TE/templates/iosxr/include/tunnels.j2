@@ -1,0 +1,18 @@
+{% for ep in TunnelEP %}
+{% if  ep !=  id %}
+interface tunnel-te{{ ep }}
+ ipv4 unnumbered Loopback0
+ auto-bw
+ autoroute announce
+ destination {{ loopbackPrefix }}0.{{ ep }}
+ fast-reroute protect node
+ path-option 1 dynamic
+{% endif %}
+{% endfor %}
+
+mpls ldp
+{% for ep in TunnelEP %}
+{% if ep != id %}
+ interface tunnel-te{{ ep }}
+{% endif %}
+{% endfor %}

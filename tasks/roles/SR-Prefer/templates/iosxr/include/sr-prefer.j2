@@ -1,0 +1,46 @@
+{% macro configure_srprefer(igp,role) %}
+{% if igp == 'isis' %}
+{% if role == 'Core' %}
+router isis Core
+ address-family ipv4 unicast
+ segment-routing mpls sr-prefer
+
+{% elif role == 'ABR' %}
+router isis ACCESS
+ address-family ipv4 unicast
+ segment-routing mpls sr-prefer
+router isis Core
+ address-family ipv4 unicast
+ segment-routing mpls sr-prefer
+
+{% elif role == 'Access' %}
+router isis ACCESS
+ address-family ipv4 unicast
+ segment-routing mpls sr-prefer
+{% endif %}
+
+{% elif igp == 'ospf' %}
+{% if role == 'Core' %}
+router ospf Core
+ segment-routing mpls sr-prefer
+
+{% elif role == 'ABR' %}
+router ospf ACCESS
+ segment-routing mpls sr-prefer
+router ospf Core
+ segment-routing mpls sr-prefer
+
+{% elif role == 'Access' %}
+router ospf ACCESS
+ segment-routing mpls sr-prefer
+{% endif %}
+{% endif %}
+{% endmacro %}
+
+{% if inventory_hostname in groups['Core'] or inventory_hostname in groups['RR'] %}
+{{ configure_srprefer(igp,'Core') }}
+{% elif inventory_hostname in groups['ABR'] %}
+{{ configure_srprefer(igp,'ABR') }}
+{% elif inventory_hostname in groups['Access'] or inventory_hostname in groups['PCE'] %}
+{{ configure_srprefer(igp,'Access') }}
+{% endif %}

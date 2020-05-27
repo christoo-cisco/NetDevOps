@@ -1,0 +1,7 @@
+interface Loopback 0
+ description Loopback
+{% if inventory_hostname in groups['PCE'] or inventory_hostname in groups['RR'] %}
+ ipv4 address {{ loopbackPrefix }}1.{{ id }}{{ loopbackCidr }}
+{% else %}
+ ipv4 address {{ loopbackPrefix }}0.{{ id }}{{ loopbackCidr }}
+{% endif %}

@@ -1,0 +1,255 @@
+{% macro configure_igp(role) %}
+{% if role == 'Core' %}
+router isis Core
+ set-overload-bit on-startup 360
+ is-type level-2-only
+ net 49.0010.0000.0000.{{ '%04d' % (id) }}.00
+ nsr
+ nsf cisco
+ log adjacency changes
+ lsp-gen-interval maximum-wait 5000 initial-wait 50 secondary-wait 200
+ lsp-refresh-interval 65000
+ max-lsp-lifetime 65535
+{% if Auth == true %}
+ lsp-password keychain IGP-KEY
+{% endif %}
+ address-family ipv4 unicast
+  metric-style wide
+  spf-interval maximum-wait 5000 initial-wait 50 secondary-wait 200
+  router-id Loopback0
+  spf prefix-priority critical tag 5000
+  spf prefix-priority high tag 1000
+ interface Loopback0
+  passive
+  address-family ipv4 unicast
+{% for interface in interfaces %}
+{% if not ( interface.startswith((management_interface , 'Loopback', 'Null')) ) %}
+ interface {{ interface }}
+  point-to-point
+{% if Auth == true %}
+  hello-password keychain IGP-KEY
+{% endif %}
+  address-family ipv4 unicast
+   metric 10
+{% endif %}
+{% endfor %}
+
+{% elif role == 'ABR' %}
+router static
+address-family ipv4 unicast
+ 10.{{ AccDom }}.1.0/24 null0
+ 10.0.1.0/24 null0
+
+prefix-set ACCESS{{ AccDom }}-PCE_SvRR-LOOPBACKS
+ 10.{{ AccDom }}.1.0/24
+end-set
+
+prefix-set CORE-PCE_SvRR-LOOPBACKS
+ 10.0.1.0/24
+end-set
+
+route-policy ACCESS{{ AccDom }}-TO-CORE
+ if destination in ACCESS{{ AccDom }}-PCE_SvRR-LOOPBACKS then
+  pass
+ else
+  drop
+ endif
+end-policy
+
+route-policy CORE-TO-ACCESS{{ AccDom }}
+ if destination in CORE-PCE_SvRR-LOOPBACKS then
+  pass
+ else
+  drop
+ endif
+end-policy
+
+router isis ACCESS
+ set-overload-bit on-startup 360
+ is-type level-2-only
+ net 49.0010.0000.0{{ AccDom }}.{{ '%04d' % (id) }}.00
+ nsr
+ distribute link-state instance-id {{ AccDom }}
+ nsf cisco
+ log adjacency changes
+ lsp-gen-interval maximum-wait 5000 initial-wait 50 secondary-wait 200
+ lsp-refresh-interval 65000
+ max-lsp-lifetime 65535
+{% if Auth == true %}
+ lsp-password keychain IGP-KEY
+{% endif %}
+ address-family ipv4 unicast
+  metric-style wide
+  spf-interval maximum-wait 5000 initial-wait 50 secondary-wait 200
+  router-id Loopback0
+  redistribute static route-policy CORE-TO-ACCESS{{ AccDom }}
+  spf prefix-priority critical tag 5000
+  spf prefix-priority high tag 1000
+ interface Loopback0
+  passive
+  address-family ipv4 unicast 
+{% for interface in interfaces %}
+{% if not ( interface.startswith((management_interface , 'Loopback', 'Null')) ) and interfaces[interface]['domain'] == 'access' %}
+ interface {{ interface }}
+  point-to-point
+{% if Auth == true %}
+  hello-password keychain IGP-KEY
+{% endif %}
+  address-family ipv4 unicast
+   metric 100
+{% endif %}
+{% endfor %}
+router isis Core
+ set-overload-bit on-startup 360
+ is-type level-2-only
+ net 49.0010.0000.0000.{{ '%04d' % (id) }}.00
+ nsr
+ distribute link-state instance-id 50
+ nsf cisco
+ log adjacency changes
+ lsp-gen-interval maximum-wait 5000 initial-wait 50 secondary-wait 200
+ lsp-refresh-interval 65000
+ max-lsp-lifetime 65535
+{% if Auth == true %}
+ lsp-password keychain IGP-KEY
+{% endif %}
+ address-family ipv4 unicast
+  metric-style wide
+  spf-interval maximum-wait 5000 initial-wait 50 secondary-wait 200
+  router-id Loopback0
+  redistribute static route-policy ACCESS{{ AccDom }}-TO-CORE
+  spf prefix-priority critical tag 5000
+  spf prefix-priority high tag 1000
+ interface Loopback0
+  passive
+  address-family ipv4 unicast
+{% for interface in interfaces %}
+{% if not ( interface.startswith((management_interface , 'Loopback', 'Null')) ) and interfaces[interface]['domain'] == 'core' %}
+ interface {{ interface }}
+  point-to-point
+{% if Auth == true %}
+  hello-password keychain IGP-KEY
+{% endif %}
+  address-family ipv4 unicast
+   metric 10
+{% endif %}
+{% endfor %}
+
+{% elif role == 'Access' %}
+router isis ACCESS
+ set-overload-bit on-startup 360
+ is-type level-2-only
+ net 49.0010.0000.0{{ AccDom }}.{{ '%04d' % (id) }}.00
+ nsr
+ nsf cisco
+ log adjacency changes
+ lsp-gen-interval maximum-wait 5000 initial-wait 50 secondary-wait 200
+ lsp-refresh-interval 65000
+ max-lsp-lifetime 65535
+{% if Auth == true %}
+ lsp-password keychain IGP-KEY
+{% endif %}
+ address-family ipv4 unicast
+  metric-style wide
+  spf-interval maximum-wait 5000 initial-wait 50 secondary-wait 200
+  router-id Loopback0
+  spf prefix-priority critical tag 5000
+  spf prefix-priority high tag 1000
+ interface Loopback0
+  passive
+  address-family ipv4 unicast
+{% for interface in interfaces %}
+{% if not ( interface.startswith((management_interface , 'Loopback', 'Null')) ) %}
+ interface {{ interface }}
+  point-to-point
+{% if Auth == true %}
+  hello-password keychain IGP-KEY
+{% endif %}
+  address-family ipv4 unicast
+   metric 100
+{% endif %}
+{% endfor %}
+
+{% elif role == 'PCE' %}
+router isis ACCESS
+ set-overload-bit on-startup 360
+ is-type level-2-only
+ net 49.0010.0000.0{{ AccDom }}.{{ '%04d' % (id) }}.00
+ nsr
+ nsf cisco
+ log adjacency changes
+ lsp-gen-interval maximum-wait 5000 initial-wait 50 secondary-wait 200
+ lsp-refresh-interval 65000
+ max-lsp-lifetime 65535
+{% if Auth == true %}
+ lsp-password keychain IGP-KEY
+{% endif %}
+ address-family ipv4 unicast
+  metric-style wide
+  spf-interval maximum-wait 5000 initial-wait 50 secondary-wait 200
+  router-id Loopback0
+  spf prefix-priority critical tag 5000
+  spf prefix-priority high tag 1000
+ interface Loopback0
+  passive
+  address-family ipv4 unicast
+{% for interface in interfaces %}
+{% if not ( interface.startswith((management_interface , 'Loopback', 'Null')) ) %}
+ interface {{ interface }}
+  point-to-point
+{% if Auth == true %}
+  hello-password keychain IGP-KEY
+{% endif %}
+  address-family ipv4 unicast
+   metric 16000000
+{% endif %}
+{% endfor %}
+
+{% elif role == 'RR' %}
+router isis Core
+ set-overload-bit on-startup 360
+ is-type level-2-only
+ net 49.0010.0000.0000.{{ '%04d' % (id) }}.00
+ nsr
+ nsf cisco
+ log adjacency changes
+ lsp-gen-interval maximum-wait 5000 initial-wait 50 secondary-wait 200
+ lsp-refresh-interval 65000
+ max-lsp-lifetime 65535
+{% if Auth == true %}
+ lsp-password keychain IGP-KEY
+{% endif %}
+ address-family ipv4 unicast
+  metric-style wide
+  spf-interval maximum-wait 5000 initial-wait 50 secondary-wait 200
+  router-id Loopback0
+  spf prefix-priority critical tag 5000
+  spf prefix-priority high tag 1000
+ interface Loopback0
+  passive
+  address-family ipv4 unicast
+{% for interface in interfaces %}
+{% if not ( interface.startswith((management_interface , 'Loopback', 'Null')) ) %}
+ interface {{ interface }}
+  point-to-point
+{% if Auth == true %}
+  hello-password keychain IGP-KEY
+{% endif %}
+  address-family ipv4 unicast
+   metric 16000000
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endmacro %}
+
+{% if inventory_hostname in groups['Core'] %}
+{{ configure_igp('Core') }}
+{% elif inventory_hostname in groups['ABR'] %}
+{{ configure_igp('ABR') }}
+{% elif inventory_hostname in groups['Access'] %}
+{{ configure_igp('Access') }}
+{% elif inventory_hostname in groups['PCE'] %}
+{{ configure_igp('PCE') }}
+{% elif inventory_hostname in groups['RR'] %}
+{{ configure_igp('RR') }}
+{% endif %}

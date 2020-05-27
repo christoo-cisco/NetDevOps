@@ -1,0 +1,207 @@
+{% macro configure_igp(role) %}
+{% if role == 'Core' %}
+router ospf Core
+ nsr 
+ log adjacency changes detail 
+ router-id {{ loopbackPrefix }}0.{{ id }}
+ nsf cisco
+{% if Auth == true %}
+ authentication message-digest key IGP-KEY
+{% endif %}
+ timers throttle lsa all 0 20 5000 
+ timers throttle spf 30 30 5000 
+ auto-cost reference-bandwidth 1000000   
+ area 0  
+  interface Loopback0
+   passive enable
+  ! 
+{% for interface in interfaces %}
+{% if not ( interface.startswith((management_interface , 'Loopback', 'Null')) ) %}
+  interface {{ interface }}
+   network point-to-point
+{% if Auth == true %}
+   authentication message-digest key IGP-KEY
+{% endif %}
+   cost 10
+{% endif %}
+{% endfor %}  
+  
+{% elif role == 'ABR' %}
+router static
+address-family ipv4 unicast
+ 10.{{ AccDom }}.1.0/24 null0
+ 10.0.1.0/24 null0
+
+prefix-set ACCESS{{ AccDom }}-PCE_SvRR-LOOPBACKS
+ 10.{{ AccDom }}.1.0/24
+end-set
+
+prefix-set CORE-PCE_SvRR-LOOPBACKS
+ 10.0.1.0/24
+end-set
+
+route-policy ACCESS{{ AccDom }}-TO-CORE
+ if destination in ACCESS{{ AccDom }}-PCE_SvRR-LOOPBACKS then
+  pass
+ else
+  drop
+ endif
+end-policy
+
+route-policy CORE-TO-ACCESS{{ AccDom }}
+ if destination in CORE-PCE_SvRR-LOOPBACKS then
+  pass
+ else
+  drop
+ endif
+end-policy
+
+router ospf ACCESS
+ nsr
+ distribute link-state instance-id {{ AccDom }} 
+ log adjacency changes detail 
+ router-id {{ loopbackPrefix }}0.{{ id }}
+ nsf cisco
+{% if Auth == true %}
+ authentication message-digest key IGP-KEY
+{% endif %}
+ timers throttle lsa all 0 20 5000 
+ timers throttle spf 30 30 5000 
+ auto-cost reference-bandwidth 1000000
+ redistribute static route-policy CORE-TO-ACCESS{{ AccDom }}  
+ area 0  
+  interface Loopback0
+   passive enable
+  !
+{% for interface in interfaces %}
+{% if not ( interface.startswith((management_interface , 'Loopback', 'Null')) ) and interfaces[interface]['domain'] == 'access' %}
+  interface {{ interface }}
+   network point-to-point
+{% if Auth == true %}
+   authentication message-digest key IGP-KEY
+{% endif %}
+   cost 100
+{% endif %}
+{% endfor %}  
+router ospf Core
+ nsr
+ distribute link-state instance-id 50 
+ log adjacency changes detail 
+ router-id {{ loopbackPrefix }}0.{{ id }}
+ nsf cisco
+{% if Auth == true %}
+ authentication message-digest key IGP-KEY
+{% endif %}
+ timers throttle lsa all 0 20 5000 
+ timers throttle spf 30 30 5000 
+ auto-cost reference-bandwidth 1000000
+ redistribute static route-policy ACCESS{{ AccDom }}-TO-CORE 
+ area 0  
+  interface Loopback0
+   passive enable
+  !   
+{% for interface in interfaces %}
+{% if not ( interface.startswith((management_interface , 'Loopback', 'Null')) ) and interfaces[interface]['domain'] == 'core' %}
+  interface {{ interface }}
+   network point-to-point
+{% if Auth == true %}
+   authentication message-digest key IGP-KEY
+{% endif %}
+   cost 10
+{% endif %}
+{% endfor %} 
+
+{% elif role == 'Access' %}
+router ospf ACCESS
+ nsr
+ log adjacency changes detail 
+ router-id {{ loopbackPrefix }}0.{{ id }}
+ nsf cisco
+{% if Auth == true %}
+ authentication message-digest key IGP-KEY
+{% endif %}
+ timers throttle lsa all 0 20 5000 
+ timers throttle spf 30 30 5000 
+ auto-cost reference-bandwidth 1000000  
+ area 0  
+  interface Loopback0
+   passive enable
+  !
+{% for interface in interfaces %}
+{% if not ( interface.startswith((management_interface , 'Loopback', 'Null')) ) %}
+  interface {{ interface }}
+   network point-to-point
+{% if Auth == true %}
+   authentication message-digest key IGP-KEY
+{% endif %}
+   cost 100
+{% endif %}
+{% endfor %}
+
+{% elif role == 'PCE' %}
+router ospf ACCESS
+ nsr
+ log adjacency changes detail 
+ router-id {{ loopbackPrefix }}1.{{ id }}
+ nsf cisco
+{% if Auth == true %}
+ authentication message-digest key IGP-KEY
+{% endif %}
+ timers throttle lsa all 0 20 5000 
+ timers throttle spf 30 30 5000 
+ auto-cost reference-bandwidth 1000000  
+ area 0  
+  interface Loopback0
+   passive enable
+  !
+{% for interface in interfaces %}
+{% if not ( interface.startswith((management_interface , 'Loopback', 'Null')) ) %}
+  interface {{ interface }}
+   network point-to-point
+{% if Auth == true %}
+   authentication message-digest key IGP-KEY
+{% endif %}
+   cost 65534
+{% endif %}
+{% endfor %}
+
+{% elif role == 'RR' %}
+router ospf Core
+ nsr
+ log adjacency changes detail 
+ router-id {{ loopbackPrefix }}1.{{ id }}
+ nsf cisco
+{% if Auth == true %}
+ authentication message-digest key IGP-KEY
+{% endif %}
+ timers throttle lsa all 0 20 5000 
+ timers throttle spf 30 30 5000 
+ auto-cost reference-bandwidth 1000000  
+ area 0  
+  interface Loopback0
+   passive enable
+  !
+{% for interface in interfaces %}
+{% if not ( interface.startswith((management_interface , 'Loopback', 'Null')) ) %}
+  interface {{ interface }}
+   network point-to-point
+{% if Auth == true %}
+   authentication message-digest key IGP-KEY
+{% endif %}
+   cost 65534
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endmacro %}
+
+{% if inventory_hostname in groups['Core'] %}
+{{ configure_igp('Core') }}
+{% elif inventory_hostname in groups['ABR'] %}
+{{ configure_igp('ABR') }}
+{% elif inventory_hostname in groups['Access'] %}
+{{ configure_igp('Access') }}
+{% elif inventory_hostname in groups['PCE'] %}
+{{ configure_igp('PCE') }}
+{% elif inventory_hostname in groups['RR'] %}
+{{ configure_igp('RR') }}
+{% endif %}

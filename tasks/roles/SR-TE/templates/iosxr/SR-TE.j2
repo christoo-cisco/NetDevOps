@@ -1,0 +1,5 @@
+{% include "include/sr-te.j2" %}
+{% if TunnelEP is defined %}
+{% include "include/tunnels.j2" %}
+{% include "include/te-frr.j2" %}
+{% endif %}

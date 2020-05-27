@@ -1,0 +1,29 @@
+{% for service in services.bgpADpw %}
+l2vpn
+ xconnect group {{ service.type }}
+  mp2mp {{ id }}to{{ service.DestNode }}
+   vpn-id {{ service.vpnID }}
+{% for interface in interface_list %}
+{% if ServiceInterfaces[interface] is defined %}
+{% for s in ServiceInterfaces[interface] %}
+{% if s.vpnID == service.vpnID %}
+{% if s.VLAN == 'untagged' %}
+   l2-encapsulation ethernet
+{% else %}
+   l2-encapsulation vlan 
+{% endif %}
+   autodiscovery bgp
+    rd auto
+    route-target {{ BGP.ASN }}:{{ service.vpnID }}
+    signaling-protocol bgp
+     ce-id {{ id }}
+{% if s.VLAN == 'untagged' %}
+      interface {{ interface }} remote-ce-id {{ service.DestNode }}
+{% else%}
+      interface {{ interface }}.{{ s.VLAN }} remote-ce-id {{ service.DestNode }}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endfor %}

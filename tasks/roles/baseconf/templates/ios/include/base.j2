@@ -1,0 +1,77 @@
+version 16.11
+service timestamps debug datetime msec
+service timestamps log datetime msec
+platform qfp utilization monitor load 80
+no platform punt-keepalive disable-kernel-core
+platform console serial
+!
+hostname {{ inventory_hostname }}
+!
+boot-start-marker
+boot-end-marker
+!
+vrf definition Mgmt-intf
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family ipv6
+ exit-address-family
+!
+no logging console
+!
+aaa new-model
+!
+!
+aaa authentication login default local
+aaa authorization exec default local
+!
+!
+!
+!
+!
+aaa session-id common
+!
+ip name-server vrf Mgmt-intf {{ primary_dns_server }}
+ip domain name cisco.com
+ip domain name vrf Mgmt-intf cisco.com
+!
+login on-success log
+!
+!
+!
+!
+!
+!
+!         
+subscriber templating
+! 
+! 
+! 
+! 
+!
+!
+multilink bundle-name authenticated
+!
+diagnostic bootup level minimal
+!
+spanning-tree extend system-id
+archive
+ path flash:archive
+ write-memory
+!
+redundancy
+!
+ip forward-protocol nd
+no ip http server
+no ip http secure-server
+ip route 0.0.0.0 128.0.0.0 null0
+!
+ntp server vrf Mgmt-intf {{ primary_ntp_server }}
+ntp source {{ management_interface }}
+ip scp server enable
+
+ip ssh version 2
+ip ssh source-interface {{ management_interface }}
+
+lldp run

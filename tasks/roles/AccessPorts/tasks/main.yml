@@ -1,0 +1,8 @@
+---
+- name: "Building Access Port Configuration"
+  template: src={{ os }}/ACCESSPORTS.j2 dest={{ baseconfdir.path }}/02_AccessPorts.out
+  changed_when: False
+  #when: commit_changes | match('0')
+  when: commit_changes == '0'
+  tags:
+    - sr-mpls

@@ -1,0 +1,35 @@
+{% for policy in services.srte %}
+segment-routing
+ traffic-eng
+  policy {{policy.name}}
+   color {{policy.color}} end-point ipv4 {{policy.endpoint}}
+   candidate-paths
+    preference 1
+     {{policy.type}}
+     metric type {{policy.metric}}
+{% if policy.usePCE == true %}
+      pcep
+{% endif %}
+{% if policy.useAnycast == true %}
+      anycast-sid-inclusion
+{% endif %}
+
+extcommunity-set opaque color-{{policy.color}}
+  {{policy.color}}
+end-set
+
+{% endfor %}
+
+route-policy SET_COLOR_EVPN_VPWS
+{% for policy in services.srte %}
+  if evpn-route-type is 1 and rd in (ios-regex '.*..*..*..*:({{policy.color}})') then
+    set extcommunity color color-{{policy.color}}
+  endif
+{% endfor %}
+  pass
+end-policy
+
+router bgp {{BGP.ASN}}
+ neighbor-group SvRR
+  address-family l2vpn evpn
+   route-policy SET_COLOR_EVPN_VPWS out

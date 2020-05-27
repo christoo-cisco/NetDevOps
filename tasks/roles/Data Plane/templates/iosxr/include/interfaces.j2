@@ -1,0 +1,46 @@
+{% set IPs = [] %}
+{% for interface in interface_list %}
+{% if interfaces[interface] is defined %} 
+
+{% if id < interfaces[interface]['remoteNodeID'] %}
+ {% set A = id %}
+ {% set B = interfaces[interface]['remoteNodeID'] %}
+ {% set C = 0 %}
+{% else %}
+ {% set A = interfaces[interface]['remoteNodeID'] %}
+ {% set B = id %}
+ {% set C = 1 %}
+{% endif %}
+
+{% set ip = interconnect_range~'.'~A~'.'~B~'.'~C %}
+
+{% set ns = namespace(newip=ip) %}
+{% for add in IPs %}
+{% if add == ip %}
+{% set ns.newip = ip|ipmath(2) %}
+{% endif %}
+{% endfor %}
+
+{% set _dummy = IPs.append(ns.newip) %}
+
+interface {{ interface }}
+ description Link to Node {{ interfaces[interface]['remoteNodeID'] }}
+ ipv4 address {{ ns.newip }}/31
+ ipv4 unreachables disable
+ carrier-delay up 100 down 0
+ load-interval 30
+ dampening
+
+{% elif ServiceInterfaces[interface] is defined %}
+interface {{ interface }}
+ description AC Interface
+
+{% elif ( interface.startswith(('tunnel-te')) ) %}
+no interface {{ interface }}
+
+{% elif not ( interface.startswith(('Mgmt', 'Loopback', 'Null', 'srte')) ) and '.' not in interface %}
+interface {{ interface }}
+ description Available Port
+  shutdown
+{% endif %}
+{% endfor %}

@@ -1,0 +1,24 @@
+{% if inventory_hostname in groups['ABR'] %}
+interface Loopback{{ AccDom }}
+ description Anycast Address
+ ipv4 address {{ AccDom }}.{{ AccDom }}.{{ AccDom }}.12 255.255.255.255
+{% if igp == 'isis' %}
+router isis Core
+ interface Loopback{{ AccDom }}
+  address-family ipv4 unicast
+   prefix-sid index 1{{ AccDom }} n-flag-clear
+router isis ACCESS
+ interface Loopback{{ AccDom }}
+  address-family ipv4 unicast
+   prefix-sid index 1{{ AccDom }} n-flag-clear
+{% elif igp == 'ospf' %}
+router ospf Core
+ area 0
+  interface Loopback{{ AccDom }}
+   prefix-sid index 1{{ AccDom }} n-flag-clear
+router ospf ACCESS
+ area 0
+  interface Loopback{{ AccDom }}
+   prefix-sid index 1{{ AccDom }} n-flag-clear
+{% endif %}
+{% endif %}

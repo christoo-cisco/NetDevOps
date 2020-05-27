@@ -1,0 +1,140 @@
+{% macro configure_bgp(group) %}
+router bgp {{ BGP.ASN }}
+nsr
+{% if inventory_hostname in groups['PCE'] or inventory_hostname in groups['RR'] %}
+ bgp router-id {{ loopbackPrefix }}1.{{ id }}
+{% else %}
+ bgp router-id {{ loopbackPrefix }}0.{{ id }}
+{% endif %}
+bgp graceful-restart
+bgp log neighbor changes detail
+ibgp policy out enforce-modifications
+
+{% if group == 'PCE' %}
+{% for a in BGP.addressFamilies %}
+address-family {{ a.addressFamily }}
+{% endfor %}
+neighbor-group SvRR-Clients
+ remote-as {{ BGP.ASN }}
+ update-source Loopback0
+{% for a in BGP.addressFamilies %}
+{% if a.Type == "Service" %}
+ address-family {{ a.addressFamily }}
+  route-reflector-client
+{% endif %}
+{% endfor %}
+neighbor-group TvRR-Clients
+ remote-as {{ BGP.ASN }}
+ update-source Loopback0
+{% for a in BGP.addressFamilies %}
+{% if a.Type == "Inf" %}
+ address-family {{ a.addressFamily }}
+  route-reflector-client
+{% endif %}
+{% endfor %}
+neighbor-group RR
+ remote-as {{ BGP.ASN }}
+ update-source Loopback0
+{% for a in BGP.addressFamilies %}
+ address-family {{ a.addressFamily }}
+{% endfor %}
+{% for host in groups['Access'] %}
+{% if hostvars[host].AccDom == AccDom %}
+neighbor {{ loopbackPrefix }}0.{{ hostvars[host].id }}
+ use neighbor-group SvRR-Clients
+{% endif %}
+{% endfor %}
+{% for host in groups['ABR'] %}
+{% if hostvars[host].AccDom == AccDom %}
+neighbor {{ loopbackPrefix }}0.{{ hostvars[host].id }}
+ use neighbor-group TvRR-Clients
+{% endif %}
+{% endfor %}
+{% for host in groups['RR'] %}
+neighbor {{ hostvars[host].loopbackPrefix }}1.{{ hostvars[host].id }}
+ use neighbor-group RR
+{% endfor %}
+
+{% elif group == 'RR' %}
+{% for a in BGP.addressFamilies %}
+address-family {{ a.addressFamily }}
+{% endfor %}
+neighbor-group RR
+ remote-as {{ BGP.ASN }}
+ update-source Loopback0
+{% for a in BGP.addressFamilies %}
+ address-family {{ a.addressFamily }}
+  route-reflector-client
+{% endfor %}
+{% for host in groups['PCE'] %}
+neighbor {{hostvars[host].loopbackPrefix}}1.{{hostvars[host].id}}
+ use neighbor-group RR
+{% endfor %}
+
+{% elif group == 'Access' %}
+{% for a in BGP.addressFamilies %}
+{% if a.Type == 'Service' %}
+address-family {{ a.addressFamily }}
+{% endif %}
+{% endfor %}
+neighbor-group SvRR
+ remote-as {{ BGP.ASN }}
+ update-source Loopback0
+{% for a in BGP.addressFamilies %}
+{% if a.Type == "Service" %}
+ address-family {{ a.addressFamily }}
+{% endif %}
+{% endfor %}
+{% if groups['PCE']|length>0 %}
+{% for host in groups['PCE'] %}
+{% if hostvars[host].AccDom == AccDom %}
+neighbor {{ loopbackPrefix }}1.{{ hostvars[host].id }}
+ use neighbor-group SvRR
+{% endif %}
+{% endfor %}
+{% elif groups['RR']|length>0 %}
+{% for host in groups['RR'] %}
+neighbor {{ hostvars[host].loopbackPrefix }}1.{{ hostvars[host].id }}
+ use neighbor-group SvRR
+{% endfor %}
+{% else %}
+{% for host in groups['Access'] %}
+{% if host != inventory_hostname %}
+neighbor {{ hostvars[host].loopbackPrefix }}0.{{ hostvars[host].id }}
+ use neighbor-group SvRR
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% elif group == 'ABR' %}
+{% for a in BGP.addressFamilies %}
+{% if a.Type == 'Inf' %}
+address-family {{ a.addressFamily }}
+{% endif %}
+{% endfor %}
+neighbor-group TvRR
+ remote-as {{ BGP.ASN }}
+ update-source Loopback0
+{% for a in BGP.addressFamilies %}
+{% if a.Type == "Inf" %}
+ address-family {{ a.addressFamily }}
+{% endif %}
+{% endfor %}
+{% for host in groups['PCE'] %}
+{% if hostvars[host].AccDom == AccDom %}
+neighbor {{ loopbackPrefix }}1.{{ hostvars[host].id }}
+ use neighbor-group TvRR
+{% endif %}
+{% endfor %}
+{% endif %} 
+{% endmacro %}
+
+{% if inventory_hostname in groups['PCE'] %}
+{{ configure_bgp('PCE') }}
+{% elif inventory_hostname in groups['RR'] %}
+{{ configure_bgp('RR') }}
+{% elif inventory_hostname in groups['Access'] %}
+{{ configure_bgp('Access') }}
+{% elif inventory_hostname in groups['ABR'] %}
+{{ configure_bgp('ABR') }}
+{% endif %}

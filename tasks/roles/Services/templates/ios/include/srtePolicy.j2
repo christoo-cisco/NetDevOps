@@ -1,0 +1,31 @@
+{% for policy in services.srte %}
+segment-routing traffic-eng
+ policy {{ policy.name }}
+  color {{ policy.color }} end-point {{ policy.endpoint }}
+  candidate-paths
+   preference 1
+    constraints
+     segments
+      dataplane mpls
+   {{ policy.type }}
+{% if policy.usePCE == true %}
+      pcep
+{% endif %}
+    metric 
+     type {{ policy.metric }}
+{% endfor %}
+
+{% set index = 0 %}
+{% for policy in services.srte %}
+{% set index = index + 1 %}
+ip extcommunity-list {{ index }}
+ 10 permit rt {{ BGP.ASN }}:{{ policy.color }}
+ !
+route-map SET_COLOR_EVPN_VPWS permit {{ policy.color }}
+ match extcommunity {{ index }}
+ set extcommunity color {{ policy.color }}
+{% endfor %}
+
+router bgp {{ BGP.ASN }}
+ address-family l2vpn evpn
+  neighbor SvRR route-map SET_COLOR_EVPN_VPWS out

@@ -1,0 +1,26 @@
+{% macro configure_ac(int, CE, VLAN, Type) %}
+{% if Type == 'L2' %}
+{% if VLAN == 'untagged' %}
+interface {{ int }}
+ service instance 0 ethernet
+ description Connection to {{ CE }}
+ encapsulation untaged
+{% else %}
+interface {{ int }}
+ service instance {{ VLAN }} ethernet
+ description Connection to {{ CE }}
+ encapsulation dot1q {{ VLAN }}
+ rewrite ingress tag pop 1 symmetric
+{% endif %}
+
+{% elif Type == 'L3' %}
+interface {{ int }}
+ description L3 interface
+{% endif %}
+{% endmacro %}
+
+{% for interface in interface_list %}
+{% if ServiceInterfaces[interface] is defined %}
+{{ configure_ac(interface, ServiceInterfaces[interface]['CE'], ServiceInterfaces[interface]['VLAN'], ServiceInterfaces[interface]['Type']) }}
+{% endif %}
+{% endfor %}

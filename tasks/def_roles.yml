@@ -1,0 +1,72 @@
+---
+- name: Configure Core
+  hosts: Core
+  gather_facts: no
+  connection: local
+
+  roles:
+  - baseconf
+  - Data Plane
+  - IGP
+  #- MPLS-LDP
+  - SR-MPLS
+  #- SR-TE
+
+- name: Configure Access
+  hosts: Access
+  gather_facts: no
+  connection: local
+
+  roles:
+  - baseconf
+  - Data Plane
+  - IGP
+  - BGP
+  #- MPLS-LDP
+  - SR-MPLS
+  #- SR-TE
+  - PCE
+  - AccessPorts
+  - Services
+
+- name: Configure ABR's
+  hosts: ABR
+  gather_facts: no
+  connection: local
+
+  roles:
+  - baseconf
+  - Data Plane
+  - IGP
+  - BGP
+  #- MPLS-LDP
+  - SR-MPLS
+  #- SR-TE
+  - Anycast_SID
+
+- name: Configure SRPCE's
+  hosts: PCE
+  gather_facts: no
+  connection: local
+
+  roles:
+  - baseconf
+  - Data Plane
+  - IGP
+  - BGP
+  #- MPLS-LDP
+  - SR-MPLS
+  - PCE
+
+- name: Configure RR's
+  hosts: RR
+  gather_facts: no
+  connection: local
+
+  roles:
+  - baseconf
+  - Data Plane
+  - IGP
+  - BGP
+  #- MPLS-LDP
+  - SR-MPLS

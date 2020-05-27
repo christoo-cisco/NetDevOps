@@ -1,0 +1,30 @@
+---
+- name: Assemble and Push configuration
+  hosts: all
+  connection: local
+  gather_facts: no
+
+  tasks:
+  - name: Assemble configuration
+    assemble: src={{ baseconfdir.path }}/ dest={{ baseconfdir.path }}/running.conf
+    changed_when: False
+    #when: commit_changes | match('0')
+    when: commit_changes == '0'
+
+    tags:
+      - deploy
+
+  - name: Push configuration with napalm
+    napalm_install_config:
+        hostname={{ management_ip }}
+        username=napalm
+        dev_os={{ os }}
+        password=napalm
+        config_file=/home/cisco/virl2/{{ customer }}/compiled/{{ inventory_hostname }}/running.conf
+        commit_changes={{ commit_changes }}
+        replace_config={{ replace_config }}
+        diff_file=/home/cisco/virl2/{{ customer }}/compiled/{{ inventory_hostname }}/diff
+    no_log: false
+
+    tags:
+      - deploy

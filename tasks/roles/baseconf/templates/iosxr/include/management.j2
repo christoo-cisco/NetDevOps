@@ -1,0 +1,8 @@
+interface {{ management_interface }}
+ vrf Mgmt-intf
+ ipv4 address {{ management_ip }}{{ management_prefix }}
+
+router static
+ vrf Mgmt-intf
+  address-family ipv4 unicast
+   0.0.0.0/0 {{ management_gw }}

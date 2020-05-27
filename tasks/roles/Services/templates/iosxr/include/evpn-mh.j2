@@ -1,0 +1,20 @@
+{% for service in services.evpnmh %}
+l2vpn
+ bridge group {{ service.type }}
+  bridge-domain {{ service.vpnID }}
+   description {{ service.CircuitID }}
+{% for interface in interface_list %}
+{% if ServiceInterfaces[interface] is defined %}
+{% for s in ServiceInterfaces[interface] %}
+{% if s.vpnID == service.vpnID %}
+{% if s.VLAN == 'untagged' %}
+   interface {{ interface }}.1
+{% else%}
+   interface {{ interface }}.{{ s.VLAN }}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+   evi {{ service.vpnID }}
+{% endfor %}

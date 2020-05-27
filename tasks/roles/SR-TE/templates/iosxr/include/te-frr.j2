@@ -1,0 +1,10 @@
+mpls traffic-eng
+{% for interface in interfaces %}
+{% if not ( interface.startswith((management_interface , 'Loopback', 'Null')) ) %}
+ interface {{ interface }}
+  auto-tunnel backup
+{% endif %}
+{% endfor %}
+ auto-tunnel backup
+  timers removal unused 20
+  tunnel-id min 6000 max 6500

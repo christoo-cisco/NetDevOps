@@ -1,0 +1,5 @@
+interface {{ management_interface }}
+ vrf forwarding Mgmt-intf
+ ip address {{ management_ip }} {{ management_prefix }}
+
+ip route vrf Mgmt-intf 0.0.0.0 0.0.0.0 {{ management_gw }}

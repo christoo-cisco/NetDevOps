@@ -1,0 +1,7 @@
+segment-routing traffic-eng
+pcc
+{% for host in groups['PCE'] %}
+{% if hostvars[host].AccDom == AccDom %}
+pce address {{ loopbackPrefix }}1.{{ hostvars[host].id }} source-address {{ loopbackPrefix }}0.{{ id }}
+{% endif %}
+{% endfor %}
